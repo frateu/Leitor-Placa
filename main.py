@@ -2,7 +2,7 @@ import cv2
 import pytesseract
 import numpy as np
 
-#função já criada
+#função retirada da internet
 def adjust_gamma(image, gamma):
     invGamma = 1.0 / gamma
     table = np.array([((i / 255.0) ** invGamma) * 255
@@ -39,13 +39,28 @@ def ocrPlate():
 
     return result
 
+def verfPlate(plate):
+    contAlpha = 0
+    contNum = 0
+    verf = False
+    for carac in plate:
+        if carac.isalpha() == True:
+            contAlpha = contAlpha + 1
+        if carac.isdigit():
+            contNum = contNum + 1
+    if contAlpha == 3 and contNum == 4:
+        verf = True
+    
+    return verf
+
 if __name__ == "__main__":
     verf = 0
     gamma = 1
+    verfPlaca = False
 
     while(verf != 2):
 
-        findPlate("plates/placa-carro.jpg", gamma)
+        findPlate("plates/placa-modelo3.png", gamma)
         ocr = ocrPlate()
 
         # print(ocr) #test
@@ -58,17 +73,21 @@ if __name__ == "__main__":
 
             for ocrSe in ocrSplited:
                 if len(ocrSe) == 7:
-                    #verificar aqui se a placa contem 3 letras e 4 numeros (para o modelo de placa antigo)
-                    verf = verf + 1
-                    gamma = gamma + 1
-                    # print(ocrSe)
-                    result = ocrSe
-                elif verf == 1:
-                    verf = 2
+                    if verfPlate(ocrSe) == True:
+                        verf = verf + 1
+                        gamma = gamma + 1
+                        # print(ocrSe)
+                        result = ocrSe
+                    elif verf > 0:
+                        verf = 2
             if verf == 0:
                 gamma = gamma + 1
         else:
             gamma = gamma + 1
+        
+        if gamma == 50:
+            verf = 2
+            result = "Não foi possivel achar uma placa ou a placa não é do modelo anterior ao Mercosul!"
     
     print("Plate: " + result)
                 
